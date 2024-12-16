@@ -13,15 +13,26 @@ async function initializeDB() {
 
         // 유저 테이블
         await db.query(`
-            CREATE TABLE IF NOT EXISTS user (
-                id INT PRIMARY KEY AUTO_INCREMENT,
+            CREATE TABLE IF NOT EXISTS users ( 
+                id VARCHAR(100) PRIMARY KEY NOT NULL UNIQUE,
+                password VARCHAR(255) NOT NULL,
                 user_name VARCHAR(10) NOT NULL UNIQUE,
-                email VARCHAR(100) NOT NULL UNIQUE,
-                password VARCHAR(255),
-                family_id INT NOT NULL,
+                family_id INT,
                 -- provider ENUM('local', 'kakao') DEFAULT 'local',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (family_id) REFERENCES family(id)
+            );
+        `);
+
+        // 리프레시토큰 테이블
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS refresh_tokens (
+                id INT PRIMARY KEY AUTO_INCREMENT,
+                user_id VARCHAR(100),
+                token VARCHAR(255),
+                expires_at TIMESTAMP,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id)
             );
         `);
 
