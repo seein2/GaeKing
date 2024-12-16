@@ -9,7 +9,7 @@ const swaggerDoc = YAML.load('./docs/swagger.yaml');
 require('./models'); // db연결
 
 dotenv.config();
-const authRouter = require('./routes/auth');
+const authRouter = require('./routes/authRoutes');
 
 const app = express();
 app.set('port', process.env.PORT || 3000);
