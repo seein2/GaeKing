@@ -19,9 +19,11 @@ app.use(morgan('dev')); //combined
 app.use(express.json());
 app.use(cors()); // 다른 도메인에서 요청 허용
 
-
-// app.use('/auth', authRouter);
+app.use('/auth', authRouter);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDoc));
+app.get('/', (req, res) => {
+    res.send('GaeKing 서버');
+});
 
 app.use((req, res, next) => {
     const error = new Error(`${req.method} ${req.url}라우터가 없음.`);
