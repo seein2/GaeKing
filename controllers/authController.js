@@ -7,7 +7,7 @@ exports.join = async (req, res) => {
     try {
         const user = await User.createUser(id, password, user_name);
         const accessToken = Token.createAccessToken(user);
-        const refreshToken = Token.createRefreshToken(user);
+        const refreshToken = await Token.createRefreshToken(user);
 
         // 회원가입 성공.
         return res.status(200).json({
@@ -38,7 +38,7 @@ exports.login = async (req, res) => {
     try {
         const user = await User.login(id, password);
         const accessToken = Token.createAccessToken(user);
-        const refreshToken = Token.createRefreshToken(user);
+        const refreshToken = await Token.createRefreshToken(user);
 
         return res.status(200).json({
             success: true,
