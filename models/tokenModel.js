@@ -50,7 +50,7 @@ class Token {
         const refreshToken = jwt.sign(
             { userId: user.id },
             process.env.REFRESH_SECRET,
-            { expiresIn: '30d' },
+            { expiresIn: '30d' }, // 만료시간 30일
         );
 
         // 만료시간 계산
