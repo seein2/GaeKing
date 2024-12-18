@@ -7,12 +7,12 @@ class User {
         // 중복아이디 확인
         const existingId = await User.findById(id);
         if (existingId) { // 존재하는 아이디면
-            throw new Error('이미 존재하는 아이디');
+            throw new Error('이미 존재하는 아이디입니다.');
         }
         // 중복닉네임 확인
         const existingName = await User.findByName(user_name)
         if (existingName) {
-            throw new Error('이미 존재하는 닉네임');
+            throw new Error('이미 존재하는 닉네임입니다.');
         }
 
         // 비밀번호 암호화
