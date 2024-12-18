@@ -18,7 +18,7 @@ class User {
         // 비밀번호 암호화
         const hash = await bcrypt.hash(password, 12);
         const [result] = await db.query(
-            `INSERT INTO users (id, password, user_name)
+            `INSERT INTO users (user_id, password, user_name)
                 VALUES (?, ?, ?)`,
             [id, hash, user_name]
         );
@@ -29,7 +29,7 @@ class User {
     // id로 회원찾기
     static async findById(id) {
         const [rows] = await db.query(
-            'SELECT * FROM users WHERE id = ?',
+            'SELECT * FROM users WHERE user_id = ?',
             [id]
         );
         return rows[0]
