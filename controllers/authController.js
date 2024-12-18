@@ -95,3 +95,18 @@ exports.refresh = async (req, res) => {
         });
     }
 };
+
+exports.info = async (req, res) => {
+    try {
+        return res.status(200).json({
+            success: true,
+            message: '사용자 정보 확인',
+            user: req.user,
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};
