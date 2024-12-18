@@ -11,6 +11,7 @@ const authMiddleware = async (req, res, next) => {
             });
         }
 
+        // 'Bearer ' 부분을 제외한 실제 토큰 추출
         const accessToken = authHeader.split(' ')[1];
         
         // 토큰 검증

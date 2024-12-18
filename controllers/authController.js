@@ -19,7 +19,7 @@ exports.join = async (req, res) => {
         });
 
     } catch (error) {
-        const errors = ['이미 존재하는 아이디', '이미 존재하는 닉네임'];
+        const errors = ['이미 존재하는 아이디입니다.', '이미 존재하는 닉네임입니다.'];
         if (errors.includes(error.message)) {
             return res.status(409).json({
                 success: false,
