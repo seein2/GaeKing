@@ -14,30 +14,53 @@ exports.authMiddleware = async (req, res, next) => {
 
         // 'Bearer ' 부분을 제외한 실제 토큰 추출
         const accessToken = authHeader.split(' ')[1];
-
-        // 토큰 검증
-        const decoded = Token.verifyAccessToken(accessToken);
-        // 사용자가 존재하는지 확인
-        const user = await User.findById(decoded.userId);
-        if (!user) {
+        if (!accessToken) {
             return res.status(401).json({
                 success: false,
-                message: '존재하지 않는 사용자입니다.'
+                message: '유효한 토큰 형식이 아닙니다.'
             });
         }
 
-        // req 객체에 user 추가
-        req.user = {
-            id: user.id,
-            user_name: user.user_name
-        };
+        try {
+            // 토큰 검증
+            const decoded = Token.verifyAccessToken(accessToken);
+            if (!decoded || !decoded.user_id) {
+                console.log('토큰 검증 실패:', {decoded});
+                return res.status(401).json({
+                    success: false,
+                    message: '토큰이 유효하지 않습니다.'
+                });
+            }
 
-        next();
+            // 사용자가 존재하는지 확인
+            const user = await User.findById(decoded.user_id);
+            if (!user) {
+                return res.status(401).json({
+                    success: false,
+                    message: '존재하지 않는 사용자입니다.'
+                });
+            }
+
+            // req 객체에 user 추가
+            req.user = {
+                user_id: user.user_id,
+                user_name: user.user_name
+            };
+
+            next();
+        } catch (tokenError) {
+            // 토큰 검증 과정에서의 구체적인 에러 처리
+            return res.status(401).json({
+                success: false,
+                message: '토큰 검증 실패',
+                error: tokenError.message
+            });
+        }
     } catch (error) {
-        // 토큰이 만료되었거나 유효하지 않은 경우
-        return res.status(401).json({
+        console.error('인증 미들웨어 에러:', error);
+        return res.status(500).json({
             success: false,
-            message: '유효하지 않은 토큰입니다.'
+            message: '서버 내부 오류'
         });
     }
 };
