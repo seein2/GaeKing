@@ -1,7 +1,7 @@
 const Token = require('../models/tokenModel');
 const User = require('../models/userModel');
 
-const authMiddleware = async (req, res, next) => {
+exports.authMiddleware = async (req, res, next) => {
     try {
         // Authorization 헤더에서 토큰 추출
         const authHeader = req.headers.authorization;
@@ -41,5 +41,3 @@ const authMiddleware = async (req, res, next) => {
         });
     }
 };
-
-module.exports = authMiddleware;
