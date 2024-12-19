@@ -3,11 +3,11 @@ const jwt = require('jsonwebtoken');
 
 class Token {
     // 리프레시토큰 저장
-    static async saveToken(userId, token, expires_at) {
+    static async saveToken(user_id, token, expires_at) {
         const [result] = await db.query(
             `INSERT INTO refresh_tokens(user_id, token, expires_at)
                 VALUES (?, ?, ?)`,
-            [userId, token, expires_at]
+            [user_id, token, expires_at]
         );
         return result.insertId;
     }
@@ -34,7 +34,7 @@ class Token {
     // 엑세스토큰 생성
     static createAccessToken(user) {
         return jwt.sign(
-            { userId: user.id },
+            { user_id: user.user_id },
             process.env.ACCESS_SECRET,
             { expiresIn: '15m' } // 만료시간 15분
         );
@@ -45,10 +45,10 @@ class Token {
         // 리프레시토큰을 만들기 전에 기존의 리프레시토큰 삭제
         await db.query(
             `DELETE FROM refresh_tokens WHERE user_id = ?`,
-            [user.id]
+            [user.user_id]
         );
         const refreshToken = jwt.sign(
-            { userId: user.id },
+            { user_id: user.user_id },
             process.env.REFRESH_SECRET,
             { expiresIn: '30d' }, // 만료시간 30일
         );
@@ -57,7 +57,7 @@ class Token {
         const expires_at = new Date();
         expires_at.setDate(expires_at.getDate() + 30);
         // db에 저장
-        await this.saveToken(user.id, refreshToken, expires_at);
+        await this.saveToken(user.user_id, refreshToken, expires_at);
         return refreshToken;
     }
 
@@ -81,7 +81,7 @@ class Token {
         if (!newToken) {
             throw new Error('토큰 발급 실패');
         }
-        return this.createAccessToken({ id: newToken.userId })
+        return this.createAccessToken({ user_id: newToken.user_id })
     }
 };
 
