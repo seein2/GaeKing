@@ -89,7 +89,7 @@ exports.refresh = async (req, res) => {
             accessToken,
         });
     } catch (error) {
-        req.status(500).json({
+        res.status(500).json({
             success: false,
             message: error.message,
         });
