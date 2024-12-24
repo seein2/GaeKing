@@ -1,12 +1,23 @@
 const db = require('../config/db');
 
 class Dog {
-    static async createDog(dog_name, birth_date, breed_type, gender, profile_image) {
+    static async createDog(dog_name, birth_date, breed_type, gender, profile_image, user_id) {
+
+        await db.beginTransaction(); // 트랜잭션 시작
+
         const [result] = await db.query(
             `INSERT INTO dogs (dog_name, birth_date, breed_type, gender, profile_image)
             VALUES(?, ?, ?, ?, ?)`,
             [dog_name, birth_date, breed_type, gender, profile_image]
         );
+
+        await db.query(
+            `INSERT INTO dog_user(dog_id, user_id) VALUES(?, ?)`,
+            [result.insertId, user_id]
+        );
+
+        await db.commit(); // 성공하면 커밋
+
         return result.insertId;
     }
 
@@ -28,11 +39,6 @@ class Dog {
     }
 
     static async deleteDog(id) {
-        const dog = await this.findById(id);
-        if (!dog) {
-            throw new Error('강아지를 찾을 수 없습니다.');
-        }
-
         const [result] = await db.query(
             `DELETE FROM dogs where id = ?`,
             [id]
