@@ -3,6 +3,8 @@ const { register, info } = require('../controllers/dogController');
 const { authMiddleware } = require('../middlewares/auth');
 const router = express.Router();
 
+router.use(authMiddleware);
+
 router.post('/register', register);
 router.get('/info', info);
 
