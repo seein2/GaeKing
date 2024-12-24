@@ -15,4 +15,7 @@ async function dbConnect() {
 
 dbConnect().catch(console.error); // 연결 확인
 
-module.exports = pool;
+module.exports = {
+    query: pool.query.bind(pool),
+    getConnection: async () => await pool.getConnection(),
+};
