@@ -10,6 +10,7 @@ async function initializeDB() {
                 birth_date DATE,
                 breed_type VARCHAR(50),
                 gender ENUM('MALE', 'FEMALE'),
+                profile_image VARCHAR(100),
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
