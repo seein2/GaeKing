@@ -2,10 +2,10 @@ const Token = require('../models/tokenModel');
 const User = require('../models/userModel');
 
 exports.join = async (req, res) => {
-    const { id, password, user_name } = req.body;
+    const { user_id, password, user_name } = req.body;
     // 비밀번호 복잡도 검증 필요하면 추가
     try {
-        const user = await User.createUser(id, password, user_name);
+        const user = await User.createUser(user_id, password, user_name);
         const accessToken = Token.createAccessToken(user);
         const refreshToken = await Token.createRefreshToken(user);
 
@@ -34,9 +34,9 @@ exports.join = async (req, res) => {
 };
 
 exports.login = async (req, res) => {
-    const { id, password } = req.body;
+    const { user_id, password } = req.body;
     try {
-        const user = await User.login(id, password);
+        const user = await User.login(user_id, password);
         const accessToken = Token.createAccessToken(user);
         const refreshToken = await Token.createRefreshToken(user);
 
