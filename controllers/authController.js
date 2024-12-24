@@ -59,7 +59,7 @@ exports.login = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: error.message,
+            message: '로그인 중 오류 발생',
         });
     }
 };
@@ -75,7 +75,7 @@ exports.logout = async (req, res) => {
     } catch (error) {
         res.status(500).json({
             success: false,
-            message: error.message,
+            message: '로그아웃 중 오류 발생',
         });
     }
 };
@@ -86,12 +86,13 @@ exports.refresh = async (req, res) => {
         const accessToken = await Token.refreshAccessToken(refreshToken);
         return res.status(200).json({
             success: true,
+            message: '토큰 발생 성공',
             accessToken,
         });
     } catch (error) {
         res.status(500).json({
             success: false,
-            message: error.message,
+            message: '토큰 발행 중 오류 발생',
         });
     }
 };
@@ -106,7 +107,7 @@ exports.info = async (req, res) => {
     } catch (error) {
         res.status(500).json({
             success: false,
-            message: error.message,
+            message: '사용자 정보 확인 중 오류 발생',
         });
     }
 };
