@@ -2,10 +2,15 @@ const Dog = require('../models/dogModel');
 const db = require('../config/db');
 
 exports.register = async (req, res) => {
+    const connection = await db.getConnection(); // 트랜잭션을 사용하기 위한 커넥션 가져오기
+
+    console.log(req.body);
     const { dog_name, birth_date, breed_type, gender, profile_image } = req.body;
-    const user_id = req.user.id; // 인증 미들웨어에서 설정된 사용자 정보
+    const user_id = req.user.user_id; // 인증 미들웨어에서 설정된 사용자 정보
     try {
-        const result = await Dog.createDog(dog_name, birth_date, breed_type, gender, profile_image, user_id);
+        await connection.beginTransaction(); // 트랜잭션 시작
+        const result = await Dog.createDog(dog_name, birth_date, breed_type, gender, profile_image, user_id, connection);
+        await connection.commit(); // 성공하면 커밋
 
         return res.status(201).json({
             success: true,
@@ -13,11 +18,13 @@ exports.register = async (req, res) => {
             result,
         });
     } catch (error) {
-        await db.rollback(); // 데베 작업 실패하면 트랜잭션 롤백
+        await connection.rollback(); // 데베 작업 실패하면 트랜잭션 롤백
         res.status(500).json({
             success: false,
             message: '강아지 등록 중 오류 발생',
         });
+    } finally {
+        connection.release();
     }
 };
 
