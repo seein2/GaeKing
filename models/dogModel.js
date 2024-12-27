@@ -1,24 +1,29 @@
 const db = require('../config/db');
 
 class Dog {
-    static async createDog(dog_name, birth_date, breed_type, gender, profile_image, user_id) {
-
-        await db.beginTransaction(); // 트랜잭션 시작
-
-        const [result] = await db.query(
-            `INSERT INTO dogs (dog_name, birth_date, breed_type, gender, profile_image)
+    static async createDog(dog_name, birth_date, breed_type, gender, profile_image, user_id, connection) {
+        // ISO 날짜 문자열을 YYYY-MM-DD 형식으로 변환
+        birth_date = new Date(birth_date).toISOString().split('T')[0];
+        console.log('유저아이디!!!!!!!!!!',user_id);
+        try {
+            const [result] = await connection.query(
+                `INSERT INTO dogs (dog_name, birth_date, breed_type, gender, profile_image)
             VALUES(?, ?, ?, ?, ?)`,
-            [dog_name, birth_date, breed_type, gender, profile_image]
-        );
+                [dog_name, birth_date, breed_type, gender, profile_image]
+            );
+            console.log('등록성공', result);
 
-        await db.query(
-            `INSERT INTO dog_user(dog_id, user_id) VALUES(?, ?)`,
-            [result.insertId, user_id]
-        );
+            await connection.query(
+                `INSERT INTO dog_user(dog_id, user_id) VALUES(?, ?)`,
+                [result.insertId, user_id]
+            );
+            console.log('관계테이블도 성공');
 
-        await db.commit(); // 성공하면 커밋
-
-        return result.insertId;
+            return result.insertId;
+        } catch (error) {
+            console.error('Model Error:', error); // 구체적인 에러 내용 확인
+            throw error;
+        }
     }
 
     static async findById(id) {
