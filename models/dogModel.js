@@ -28,7 +28,7 @@ class Dog {
 
     static async findById(id) {
         const [result] = await db.query(
-            `SELECT * FROM dogs WHERE id = ?`,
+            `SELECT * FROM dogs WHERE dog_id = ?`,
             [id]
         );
         return result[0];
@@ -45,7 +45,7 @@ class Dog {
 
     static async deleteDog(id) {
         const [result] = await db.query(
-            `DELETE FROM dogs where id = ?`,
+            `DELETE FROM dogs where dog_id = ?`,
             [id]
         );
         return result;
