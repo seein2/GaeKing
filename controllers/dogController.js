@@ -5,7 +5,8 @@ exports.register = async (req, res) => {
     const connection = await db.getConnection(); // 트랜잭션을 사용하기 위한 커넥션 가져오기
 
     console.log(req.body);
-    const { dog_name, birth_date, breed_type, gender, profile_image } = req.body;
+    const { dog_name, birth_date, breed_type, gender } = req.body;
+    const profile_image = req.file ? req.file.path : null;
     const user_id = req.user.user_id; // 인증 미들웨어에서 설정된 사용자 정보
     try {
         await connection.beginTransaction(); // 트랜잭션 시작
