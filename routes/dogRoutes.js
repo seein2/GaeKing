@@ -6,7 +6,9 @@ const router = express.Router();
 
 router.use(authMiddleware);
 
-router.post('/register',uploadProfile.single('profile_image'), register);
-router.get('/info', info);
+router.post('/',uploadProfile.single('profile_image'), register);
+router.get('/:id', info);
+// router.put('/:id', update);
+// router.delete('/:id', delete);
 
 module.exports = router;
