@@ -82,7 +82,13 @@ exports.update = async(req, res) => {
 
         // 강아지 정보 업데이트
         // updateDog 수정
-        await Dog.updateDog(id, dog_name, birth_date, breed_type, gender, profile_image, user_id, connection);
+        await Dog.updateDog(id, { 
+            dog_name, 
+            birth_date, 
+            breed_type, 
+            gender, 
+            profile_image 
+        });
         
         await connection.commit();
 
