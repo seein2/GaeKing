@@ -9,7 +9,8 @@ async function initializeDB() {
                 dog_name VARCHAR(50) NOT NULL,
                 birth_date DATE,
                 breed_type VARCHAR(50),
-                gender ENUM('MALE', 'FEMALE'),
+                gender ENUM('남자', '여자'),
+                profile_image VARCHAR(100),
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);

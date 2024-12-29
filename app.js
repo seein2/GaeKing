@@ -10,6 +10,7 @@ require('./models'); // db연결
 
 dotenv.config();
 const authRouter = require('./routes/authRoutes');
+const dogRouter = require('./routes/dogRoutes');
 
 const app = express();
 app.set('port', process.env.PORT || 3000);
@@ -20,6 +21,7 @@ app.use(express.json());
 app.use(cors()); // 다른 도메인에서 요청 허용
 
 app.use('/auth', authRouter);
+app.use('/dog', dogRouter);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDoc));
 app.get('/', (req, res) => {
     res.send('GaeKing 서버');
