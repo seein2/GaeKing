@@ -35,16 +35,16 @@ class Dog {
     }
 
     static async updateDog(id, { dog_name, birth_date, breed_type, gender, profile_image }) {
-        const [result] = await db.query(
+        const [result] = await connection.query(
             `UPDATE dogs SET dog_name = ?, birth_date = ?, breed_type = ?, gender = ?, profile_image = ?
-            WHERE id = ?`,
+            WHERE dog_id = ?`,
             [dog_name, birth_date, breed_type, gender, profile_image, id]
         );
         return result;
     }
 
     static async deleteDog(id) {
-        const [result] = await db.query(
+        const [result] = await connection.query(
             `DELETE FROM dogs where dog_id = ?`,
             [id]
         );
