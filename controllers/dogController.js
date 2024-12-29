@@ -53,3 +53,96 @@ exports.info = async (req, res) => {
         })
     }
 };
+
+exports.update = async(req, res) => {
+    const { id } = req.params
+    const { dog_name, birth_date, breed_type, gender, profile_image} = req.body;
+    const connection = await db.getConnection();  
+
+    try {
+        await connection.beginTransaction();
+        
+        // 강아지 존재 여부 확인
+        const result = await Dog.findById(id);
+        if (!result) {
+            return res.status(404).json({
+                success: false,
+                message: '강아지를 찾을 수 없습니다.',
+            });
+        }
+
+        // 수정 권한 확인 (현재 로그인한 사용자의 강아지인지)
+        if (dog_user.user_id !== req.user.user_id) {
+            return res.status(403).json({
+                success: false,
+                message: '수정 권한이 없습니다.',
+            });
+        }
+
+        // 강아지 정보 업데이트
+        // updateDog 수정
+        await Dog.updateDog(id, dog_name, birth_date, breed_type, gender, profile_image, user_id, connection);
+        
+        await connection.commit();
+
+        const updatedDog = await Dog.findById(id);
+        
+        return res.status(200).json({
+            success: true,
+            message: '강아지 정보가 수정되었습니다.',
+            result: updatedDog,
+        });
+
+    } catch (error) {
+        await connection.rollback();
+        res.status(500).json({
+            success: false,
+            message: '강아지 정보 수정 중 오류 발생',
+        });
+    } finally {
+        connection.release();
+    }
+};
+
+exports.remove = async(req, res) => {
+    const{id}=req.params;
+    const connection = await db.getConnection();
+
+    try {
+        await connection.beginTransaction();
+
+        //강아지 존재 여부 확인
+        const dog = await Dog.findById(id);
+        if(!dog) {
+            return res.status(404).json({
+                success : false,
+                message : '강아지를 찾을 수 없습니다.',
+            });
+        }
+
+        //삭제 권한 확인 (현재 로그인한 사용자의 강아지인지)
+        if (dog_user.user_id != req.user.user_id) {
+            return res.status(403).json({
+                success:false,
+                message:'삭제 권한이 없습니다. ',
+            });
+        }
+
+        await Dog.deleteDog(id, connection);
+
+        await connection.commit();
+        return res.status(200).json({
+            success: true,
+            message: '강아지가 삭제되었습니다.',
+        });
+
+    }catch(error) {
+        await connection.rollback();
+        res.status(500).json({
+            success:false,
+            message: '강아지 삭제 중 오류 발생',
+        });
+    }finally {
+        connection.release();
+    }
+}; 
