@@ -76,7 +76,9 @@ class Dog {
         return result;
     }
 
+    // dog_user 테이블부터 삭제
     static async deleteDog(id, connection) {
+        // 트랜잭션 작업을 하기 때문에 connection 사용
         await connection.query(
             `DELETE FROM dog_user WHERE dog_id = ?`,
             [id]
