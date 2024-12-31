@@ -80,12 +80,9 @@ exports.info = async (req, res) => {
 
 exports.update = async (req, res) => {
     const { id } = req.params
-    const { dog_name, birth_date, breed_type, gender, profile_image } = req.body;
-    const connection = await db.getConnection();
-
+    const { dog_name, birth_date, breed_type, gender } = req.body;
+    const profile_image = req.file ? req.file.path : null;
     try {
-        await connection.beginTransaction();
-
         // 강아지 존재 여부 확인
         const result = await Dog.findById(id);
         if (!result) {
@@ -96,15 +93,15 @@ exports.update = async (req, res) => {
         }
 
         // 수정 권한 확인 (현재 로그인한 사용자의 강아지인지)
-        if (dog_user.user_id !== req.user.user_id) {
-            return res.status(403).json({
-                success: false,
-                message: '수정 권한이 없습니다.',
-            });
-        }
+        // const owner = await Dog.checkOwner(id, req.user.user_id);
+        // if (!owner) {
+        //     return res.status(403).json({
+        //         success: false,
+        //         message: '수정 권한이 없습니다.',
+        //     });
+        // }
 
         // 강아지 정보 업데이트
-        // updateDog 수정
         await Dog.updateDog(id, {
             dog_name,
             birth_date,
@@ -112,9 +109,6 @@ exports.update = async (req, res) => {
             gender,
             profile_image
         });
-
-        await connection.commit();
-
         const updatedDog = await Dog.findById(id);
 
         return res.status(200).json({
@@ -122,22 +116,17 @@ exports.update = async (req, res) => {
             message: '강아지 정보가 수정되었습니다.',
             result: updatedDog,
         });
-
     } catch (error) {
-        await connection.rollback();
         res.status(500).json({
             success: false,
             message: '강아지 정보 수정 중 오류 발생',
         });
-    } finally {
-        connection.release();
     }
 };
 
 exports.remove = async (req, res) => {
     const { id } = req.params;
     const connection = await db.getConnection();
-
     try {
         await connection.beginTransaction();
 
@@ -150,22 +139,23 @@ exports.remove = async (req, res) => {
             });
         }
 
-        //삭제 권한 확인 (현재 로그인한 사용자의 강아지인지)
-        if (dog_user.user_id != req.user.user_id) {
+        // 수정 권한 확인 (현재 로그인한 사용자의 강아지인지)
+        const owner = await Dog.checkOwner(id, req.user.user_id, connection);
+        if (!owner) {
             return res.status(403).json({
                 success: false,
-                message: '삭제 권한이 없습니다. ',
+                message: '수정 권한이 없습니다.',
             });
         }
 
         await Dog.deleteDog(id, connection);
 
         await connection.commit();
+
         return res.status(200).json({
             success: true,
             message: '강아지가 삭제되었습니다.',
         });
-
     } catch (error) {
         await connection.rollback();
         res.status(500).json({
