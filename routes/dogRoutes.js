@@ -8,8 +8,9 @@ router.use(authMiddleware);
 
 router.post('/', uploadProfile.single('profile_image'), register);
 router.get('/', list);
-router.get('/:id', info);
-router.put('/:id', uploadProfile.single('profile_image'),  update);
-router.delete('/:id', remove);
+router.get('/:id', getProfileDetail);
+router.get('/:id/edit', info);
+router.put('/:id/edit', uploadProfile.single('profile_image'),  update);
+router.delete('/:id/edit', remove);
 
 module.exports = router;
