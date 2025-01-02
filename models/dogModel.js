@@ -31,7 +31,7 @@ class Dog {
         );
 
         const [familyMembers] = await db.query(
-            `SELECT u.user_id, u.name
+            `SELECT u.user_id, u.user_name
             FROM users u 
             JOIN dog_user du ON u.user_id = du.user_id 
             WHERE du.dog_id = ?
