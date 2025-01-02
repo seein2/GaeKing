@@ -1,5 +1,5 @@
 const express = require('express');
-const { register,list, info, update, remove } = require('../controllers/dogController');
+const { register,list, info, update, remove, getProfileDetail } = require('../controllers/dogController');
 const { authMiddleware } = require('../middlewares/authMiddleware');
 const { uploadProfile } = require('../middlewares/uploadMiddleware')
 const router = express.Router();
