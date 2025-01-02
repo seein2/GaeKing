@@ -25,11 +25,23 @@ class Dog {
     };
 
     static async findById(id) {
-        const [result] = await db.query(
-            `SELECT * FROM dogs WHERE dog_id = ?`,
+        const [dog] = await db.query(
+            'SELECT * FROM dogs WHERE dog_id = ?',
             [id]
         );
-        return result[0];
+
+        const [familyMembers] = await db.query(
+            `SELECT u.user_id, u.name
+            FROM users u 
+            JOIN dog_user du ON u.user_id = du.user_id 
+            WHERE du.dog_id = ?
+            ORDER BY du.created_at`,  // 가입 순서대로 정렬
+            [id]
+        );
+        return {
+            dog: dog[0],
+            familyMembers
+        };
     };
 
     static async findByUserId(user_id) {
@@ -98,33 +110,6 @@ class Dog {
         );
         return rows.length > 0;
     };
-
-    static async getProfileDetail(id) {
-        const [dog] = await db.query(
-            'SELECT * FROM dogs WHERE dog_id = ?',
-            [id]
-        );
-
-        const [familyMembers] = await db.query(
-           `SELECT u.user_id, u.name, du.role 
-            FROM users u 
-            JOIN dog_user du ON u.user_id = du.user_id 
-            WHERE du.dog_id = ?
-            ORDER BY du.created_at`,  // 가입 순서대로 정렬
-            [id]
-        );
-
-        //순서대로 집사 1 2..부여
-        const formattedMembers = familyMembers.map((member, index) => ({
-            ...member,
-            role: `집사${index + 1}`
-        }));
-
-        return {
-            dog: dog[0],
-            familyMembers
-        };
-    }
 
 };
 
