@@ -165,16 +165,15 @@ exports.remove = async (req, res) => {
     } finally {
         connection.release();
     }
-}; 
-
+};
 
 // 강아지 조직도
-exports.getProfileDetail = async(req, res) => {
-    const{id} = req.params;
+exports.getProfileDetail = async (req, res) => {
+    const { id } = req.params;
     try {
         // 강아지 정보 조회
         const dog = await Dog.getProfileDetail(id);
-        if(!dog) {
+        if (!dog) {
             return res.status(404).json({
                 success: false,
                 message: '강아지를 찾을 수 없습니다.',
@@ -186,9 +185,9 @@ exports.getProfileDetail = async(req, res) => {
             message: '프로필 상세 정보 조회 성공',
             dog
         });
-    }catch(error) {
+    } catch (error) {
         res.status(500).json({
-            success:false,
+            success: false,
             message: '프로필 상세 정보 조회 중 오류 발생',
         });
     }
