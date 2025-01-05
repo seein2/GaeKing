@@ -47,7 +47,7 @@ class Schedule {
             await db.rollback();
             throw error;  // 에러를 상위로 전파
         }
-    }
+    };
 
     // 일정 수정
     static async update({ scheduleId, schedule_type, description, schedule_date, schedule_time, notification_type, repeat_type, repeat_end_date, is_completed }) {
@@ -103,7 +103,7 @@ class Schedule {
             await db.rollback();
             throw error;
         }
-    }
+    };
 
     //일정 조회
     static async getScheduleList(scheduleDate) {
@@ -122,7 +122,7 @@ class Schedule {
         );
 
         return schedules;
-    }
+    };
 
     static async getScheduleDetail(scheduleId) {
         const [schedules] = await db.query(
@@ -146,7 +146,7 @@ class Schedule {
         );
 
         return schedules[0];
-    }
+    };
 
     static async delete(scheduleId) {
         try {
@@ -165,8 +165,8 @@ class Schedule {
             await db.rollback();
             throw error;
         }
-    }
+    };
 
-}
+};
 
 module.exports = Schedule;
