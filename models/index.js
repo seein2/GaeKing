@@ -37,7 +37,7 @@ async function initializeDB() {
                 FOREIGN KEY (user_id) REFERENCES users(user_id)
             );
         `);
-        
+
         // ----------------------스케쥴 관련 테이블----------------------
         await db.query(`
             CREATE TABLE IF NOT EXISTS schedules (
