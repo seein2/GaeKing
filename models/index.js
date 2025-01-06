@@ -37,7 +37,7 @@ async function initializeDB() {
                 FOREIGN KEY (user_id) REFERENCES users(user_id)
             );
         `);
-        
+
         // ----------------------스케쥴 관련 테이블----------------------
         await db.query(`
             CREATE TABLE IF NOT EXISTS schedules (
@@ -46,28 +46,42 @@ async function initializeDB() {
                 schedule_type ENUM('식사', '산책', '간식', '목욕', '병원', '기타') NOT NULL,
                 description TEXT,
                 schedule_date DATE NOT NULL,
-                schedule_time TIME NOT NULL,
-                is_completed BOOLEAN NOT NULL, -- 완료 여부(식사나 산책은 true, 병원같은건 false로)
+                repeat_count INT CHECK (repeat_count BETWEEN 1 AND 5),  -- daily 반복일 때 사용
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                 FOREIGN KEY (dog_id) REFERENCES dogs(dog_id) ON DELETE CASCADE
             );
         `);
         await db.query(`
-            CREATE TABLE IF NOT EXISTS schedule_repeats (
+            CREATE TABLE IF NOT EXISTS schedule_repeats ( -- 스케쥴 반복 테이블
                 repeat_id INT PRIMARY KEY AUTO_INCREMENT,
                 schedule_id INT NOT NULL,
-                repeat_type ENUM('daily', 'weekly', 'monthly') NOT NULL,
-                repeat_end_date DATE,
+                repeat_type ENUM('none', 'daily', 'weekly', 'monthly') NOT NULL,
                 FOREIGN KEY (schedule_id) REFERENCES schedules(schedule_id) ON DELETE CASCADE
             );
         `);
         await db.query(`
-            CREATE TABLE IF NOT EXISTS schedule_notifications (
+            CREATE TABLE IF NOT EXISTS schedule_notifications ( -- 스케쥴 알림 테이블
                 notification_id INT PRIMARY KEY AUTO_INCREMENT,
                 schedule_id INT NOT NULL,
-                notification_type ENUM('none', '10_minutes', '30_minutes', '60_minutes') NOT NULL,
+                enabled BOOLEAN NOT NULL DEFAULT FALSE,
+                minutes INT CHECK (minutes IN (0, 10, 30, 60)) NOT NULL,
                 FOREIGN KEY (schedule_id) REFERENCES schedules(schedule_id) ON DELETE CASCADE
+            );
+        `);
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS schedule_instances ( -- 실제 스케줄 발생 정보
+                instance_id INT PRIMARY KEY AUTO_INCREMENT,
+                schedule_id INT NOT NULL,
+                scheduled_date DATE NOT NULL,
+                scheduled_time TIME NOT NULL,
+                is_deleted BOOLEAN DEFAULT FALSE,
+                is_completed BOOLEAN DEFAULT FALSE,
+                completion_time DATETIME,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                FOREIGN KEY (schedule_id) REFERENCES schedules(schedule_id) ON DELETE CASCADE,
+                INDEX idx_schedule_date (schedule_id, scheduled_date)
             );
         `);
         // ----------------------스케쥴 관련 테이블----------------------
