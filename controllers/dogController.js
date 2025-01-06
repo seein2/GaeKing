@@ -166,3 +166,40 @@ exports.remove = async (req, res) => {
         connection.release();
     }
 };
+
+exports.invitation = async (req, res) => {
+    const { dog_id } = req.params;
+    const connection = await db.getConnection();
+
+    try {
+        await connection.beginTransaction();
+
+
+        const owner = await Dog.invitation(dog_id, req.user.user_id, connection);
+        if (!owner) {
+            return res.status(403).json({
+                success: false,
+                message: '초대 코드 생성 권한이 없습니다.',
+            });
+        }
+
+        // 초대 코드 생성
+        const code = await Dog.createInvitation(dogId, connection);
+
+        await connection.commit();
+
+        return res.status(200).json({
+            success: true,
+            message: '초대 코드가 생성되었습니다.',
+            result,
+        });
+    } catch (error) {
+        await connection.rollback();
+        res.status(500).json({
+            success: false,
+            message: '초대 코드 생성 중 오류 발생',
+        });
+    } finally {
+        connection.release();
+    }
+};
