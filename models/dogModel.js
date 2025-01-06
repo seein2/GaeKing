@@ -111,6 +111,7 @@ class Dog {
         return rows.length > 0;
     };
 
+    // 초대 코드 생성
     static async invitation(dogId, connection) {
         const createCode = () => {
             const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -132,6 +133,7 @@ class Dog {
         return code;
     };
 
+    // 초대 코드 확인
     static async check(code) {
         const [result] = await db.query(
             `SELECT * FROM dog_invitation WHERE code = ? AND is_used  = FALSE AND codeTime > CURRENT_TIMESTAMP`,
@@ -140,6 +142,7 @@ class Dog {
         return result;
     };
 
+    // 초대 코드 허락
     static async accept(dogId, userId, code, connection) {
         await connection.query(
             `INSERT INTO dog_user(dog_id, user_id) VALUES(?, ?)`,
