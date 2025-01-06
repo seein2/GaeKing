@@ -86,7 +86,7 @@ class Dog {
                 id]
         );
         return result;
-    }
+    };
 
     // dog_user 테이블부터 삭제
     static async deleteDog(id, connection) {
@@ -110,6 +110,49 @@ class Dog {
         );
         return rows.length > 0;
     };
+
+    static async invitation(dogId, connection) {
+        const createCode = () => {
+            const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            let code = '';
+            for (let i = 0; i < 8; i++) {
+                code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return code;
+        };
+
+        const codeTime = new Date(Date.now() + 3*60*1000);
+        const code = createCode();
+        
+        await connection.query(
+            `INSERT INTO dog_invitation(dog_id, code, codeTime) VALUES(?, ?, ?)`,
+            [dogId, code, codeTime]
+        );
+
+        return code;
+    };
+
+    static async check(code) {
+        const [result] = await db.query(
+            `SELECT * FROM dog_invitation WHERE code = ? AND is_used  = FALSE AND codeTime > CURRENT_TIMESTAMP`,
+            [code]
+        );
+        return result;
+    };
+
+    static async accept(dogId, userId, code, connection) {
+        await connection.query(
+            `INSERT INTO dog_user(dog_id, user_id) VALUES(?, ?)`,
+            [dogId, userId]
+        );
+
+        await connection.query(
+            'UPDATE dog_invitation SET is_used = TRUE WHERE code = ?',
+            [code]
+        );
+    };
+
+
 
 };
 
