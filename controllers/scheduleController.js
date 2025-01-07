@@ -59,9 +59,9 @@ exports.getScheduleDetail = async (req, res) => {
                 message: '해당 스케줄을 찾을 수 없습니다.'
             });
         }
-
         res.json({
             success: true,
+            message: '스케쥴 상세 조회 성공',
             result: schedule
         });
 
@@ -71,7 +71,7 @@ exports.getScheduleDetail = async (req, res) => {
             success: false,
             message: '스케줄 상세 조회 중 오류가 발생했습니다.'
         });
-    }
+    };
 };
 
 // 일정 수정
