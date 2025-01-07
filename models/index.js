@@ -74,7 +74,7 @@ async function initializeDB() {
                 instance_id INT PRIMARY KEY AUTO_INCREMENT,
                 schedule_id INT NOT NULL,
                 scheduled_date DATE NOT NULL,
-                scheduled_time TIME NOT NULL,
+                scheduled_time TIME,
                 is_deleted BOOLEAN DEFAULT FALSE, -- 개별 삭제 관리
                 is_completed BOOLEAN DEFAULT FALSE, -- 상태 관리
                 completion_time DATETIME,
