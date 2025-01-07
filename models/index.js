@@ -46,7 +46,6 @@ async function initializeDB() {
                 schedule_type ENUM('식사', '산책', '간식', '목욕', '병원', '기타') NOT NULL,
                 description TEXT,
                 schedule_date DATE NOT NULL,
-                repeat_count INT CHECK (repeat_count BETWEEN 1 AND 5),  -- daily 반복일 때 사용
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                 FOREIGN KEY (dog_id) REFERENCES dogs(dog_id) ON DELETE CASCADE
@@ -57,6 +56,7 @@ async function initializeDB() {
                 repeat_id INT PRIMARY KEY AUTO_INCREMENT,
                 schedule_id INT NOT NULL,
                 repeat_type ENUM('none', 'daily', 'weekly', 'monthly') NOT NULL,
+                repeat_count INT CHECK (repeat_count BETWEEN 1 AND 5),  -- daily 반복일 때 사용
                 FOREIGN KEY (schedule_id) REFERENCES schedules(schedule_id) ON DELETE CASCADE
             );
         `);
