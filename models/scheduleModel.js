@@ -128,7 +128,7 @@ class Schedule {
             LEFT JOIN schedule_notifications sn ON s.schedule_id = sn.schedule_id
             LEFT JOIN schedule_repeats sr ON s.schedule_id = sr.schedule_id
             LEFT JOIN schedule_instances si ON s.schedule_id = si.schedule_id
-            WHERE s.schedule_date = ?
+            WHERE si.scheduled_date = ?
             ORDER BY si.scheduled_time, d.dog_name ASC`,
             [scheduleDate]
         );
