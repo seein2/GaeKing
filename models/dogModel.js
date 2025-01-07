@@ -25,11 +25,23 @@ class Dog {
     };
 
     static async findById(id) {
-        const [result] = await db.query(
-            `SELECT * FROM dogs WHERE dog_id = ?`,
+        const [dog] = await db.query(
+            'SELECT * FROM dogs WHERE dog_id = ?',
             [id]
         );
-        return result[0];
+
+        const [familyMembers] = await db.query(
+            `SELECT u.user_id, u.user_name
+            FROM users u 
+            JOIN dog_user du ON u.user_id = du.user_id 
+            WHERE du.dog_id = ?
+            ORDER BY du.created_at`,  // 가입 순서대로 정렬
+            [id]
+        );
+        return {
+            dog: dog[0],
+            familyMembers
+        };
     };
 
     static async findByUserId(user_id) {
@@ -74,7 +86,7 @@ class Dog {
                 id]
         );
         return result;
-    }
+    };
 
     // dog_user 테이블부터 삭제
     static async deleteDog(id, connection) {
@@ -98,6 +110,52 @@ class Dog {
         );
         return rows.length > 0;
     };
+
+    // 초대 코드 생성
+    static async invitation(dogId, connection) {
+        const createCode = () => {
+            const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            let code = '';
+            for (let i = 0; i < 8; i++) {
+                code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return code;
+        };
+
+        const codeTime = new Date(Date.now() + 3*60*1000);
+        const code = createCode();
+        
+        await connection.query(
+            `INSERT INTO dog_invitation(dog_id, code, codeTime) VALUES(?, ?, ?)`,
+            [dogId, code, codeTime]
+        );
+
+        return code;
+    };
+
+    // 초대 코드 확인
+    static async check(code) {
+        const [result] = await db.query(
+            `SELECT * FROM dog_invitation WHERE code = ? AND is_used  = FALSE AND codeTime > CURRENT_TIMESTAMP`,
+            [code]
+        );
+        return result;
+    };
+
+    // 초대 코드 허락
+    static async accept(dogId, userId, code, connection) {
+        await connection.query(
+            `INSERT INTO dog_user(dog_id, user_id) VALUES(?, ?)`,
+            [dogId, userId]
+        );
+
+        await connection.query(
+            'UPDATE dog_invitation SET is_used = TRUE WHERE code = ?',
+            [code]
+        );
+    };
+
+
 
 };
 
