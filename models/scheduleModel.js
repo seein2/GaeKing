@@ -3,56 +3,57 @@ const db = require('../config/db');
 class Schedule {
     //일정 등록
     static async create({ dog_id, type, date, description, repeat, times, notification }) {
+        const connection = await db.getConnection(); // connection을 별도로 생성
         try {
-            await db.beginTransaction();
-    
+            await connection.beginTransaction();
+
             // 1. 기본 스케줄 생성
-            const [scheduleResult] = await db.query(
+            const [scheduleResult] = await connection.query(
                 `INSERT INTO schedules (dog_id, schedule_type, description, schedule_date)
                  VALUES (?, ?, ?, ?)`,
                 [dog_id, type, description, date]
             );
-    
             const scheduleId = scheduleResult.insertId;
-    
+
             // 2. 반복 설정 생성
             if (repeat && repeat.type !== 'none') {
-                await db.query(
+                await connection.query(
                     `INSERT INTO schedule_repeats (schedule_id, repeat_type, repeat_count)
                      VALUES (?, ?, ?)`,
                     [scheduleId, repeat.type, repeat.count || null]
                 );
-            }
-    
+            };
+
             // 3. 시간별 인스턴스 생성
             if (times && times.length > 0) {
                 for (const time of times) {
-                    await db.query(
+                    await connection.query(
                         `INSERT INTO schedule_instances 
                          (schedule_id, scheduled_date, scheduled_time)
                          VALUES (?, ?, ?)`,
                         [scheduleId, date, `${String(time.hour).padStart(2, '0')}:${String(time.minute).padStart(2, '0')}`]
                     );
-                }
-            }
-    
+                };
+            };
+
             // 4. 알림 설정 생성
             if (notification?.enabled) {
-                await db.query(
+                await connection.query(
                     `INSERT INTO schedule_notifications (schedule_id, enabled, minutes)
                      VALUES (?, true, ?)`,
                     [scheduleId, notification.minutes]
                 );
-            }
-    
-            await db.commit();
-    
-            // 생성된 스케줄 정보 조회하여 반환
-            return await this.getScheduleDetail(scheduleId);
-    
+            };
+
+            await connection.commit();
+
+            return scheduleId;
+
         } catch (error) {
-            await db.rollback();
+            await connection.rollback();
             throw error;
+        } finally {
+            connection.release(); // 연결 해제
         }
     };
 
@@ -80,9 +81,9 @@ class Schedule {
             ORDER BY si.scheduled_time, d.dog_name ASC`,
             [scheduleDate]
         );
-    
+
         return schedules;
-    }
+    };
 
     static async getScheduleDetail(scheduleId) {
         const [schedules] = await db.query(
@@ -137,7 +138,7 @@ class Schedule {
                  VALUES (?, ?)`,
                     [scheduleId, notification_type]
                 );
-            }
+            };
 
             // 3. 반복 설정 수정 (기존 설정 삭제 후 새로 생성)
             await db.query(
@@ -151,7 +152,7 @@ class Schedule {
                  VALUES (?, ?, ?)`,
                     [scheduleId, repeat_type, repeat_end_date]
                 );
-            }
+            };
 
             await db.commit();
 
@@ -161,7 +162,7 @@ class Schedule {
         } catch (error) {
             await db.rollback();
             throw error;
-        }
+        };
     };
 
     static async delete(scheduleId) {
@@ -180,7 +181,7 @@ class Schedule {
         } catch (error) {
             await db.rollback();
             throw error;
-        }
+        };
     };
 
 };
