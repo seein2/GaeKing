@@ -39,14 +39,14 @@ async function initializeDB() {
         `);
 
         //사용자 초대
-        await ab.query(`
+        await db.query(`
             CREATE TABLE IF NOT EXISTS dog_invitations (
                 dog_id INT NOT NULL, 
                 code VARCHAR(8) NOT NULL UNIQUE, 
                 is_used BOOLEAN DEFAULT FALSE, 
                 codeTime TIMESTAMP NOT NULL,  
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (dog_id) REFERENCES dogs(dog_id) ON DELETE CASCADE,
+                FOREIGN KEY (dog_id) REFERENCES dogs(dog_id) ON DELETE CASCADE
             );
         `)
 
