@@ -3,7 +3,7 @@ const db = require('../config/db');
 class Schedule {
     //일정 등록
     static async create({ dog_id, type, date, description, repeat, times, notification }) {
-        const connection = await db.getConnection(); // connection을 별도로 생성
+        const connection = await db.getConnection();
         try {
             await connection.beginTransaction();
 
@@ -15,7 +15,8 @@ class Schedule {
             );
             const scheduleId = scheduleResult.insertId;
 
-            // 2. 반복 설정 생성
+            // 2. 반복 설정 생성 (있는 경우)
+            // repeat_count는 하루에 반복하는 횟수
             if (repeat && repeat.type !== 'none') {
                 await connection.query(
                     `INSERT INTO schedule_repeats (schedule_id, repeat_type, repeat_count)
@@ -24,19 +25,7 @@ class Schedule {
                 );
             };
 
-            // 3. 시간별 인스턴스 생성
-            if (times && times.length > 0) {
-                for (const time of times) {
-                    await connection.query(
-                        `INSERT INTO schedule_instances 
-                         (schedule_id, scheduled_date, scheduled_time)
-                         VALUES (?, ?, ?)`,
-                        [scheduleId, date, `${String(time.hour).padStart(2, '0')}:${String(time.minute).padStart(2, '0')}`]
-                    );
-                };
-            };
-
-            // 4. 알림 설정 생성
+            // 3. 알림 설정 생성 (있는 경우)
             if (notification?.enabled) {
                 await connection.query(
                     `INSERT INTO schedule_notifications (schedule_id, enabled, minutes)
@@ -45,17 +34,80 @@ class Schedule {
                 );
             };
 
-            await connection.commit();
+            // 4. 인스턴스 생성
+            const instances = [];
 
+            // 반복 날짜 계산 (3개월) 
+            let dates = [date];
+            if (repeat && repeat.type !== 'none') {
+                dates = this.#generateRepeatDates(date, repeat.type);
+            };
+
+            // 시간 설정이 있는 경우
+            if (times && times.length > 0) {
+                for (const currentDate of dates) {
+                    for (const time of times) {
+                        instances.push([
+                            scheduleId,
+                            currentDate,
+                            `${String(time.hour).padStart(2, '0')}:${String(time.minute).padStart(2, '0')}`
+                        ]);
+                    };
+                };
+            } else {// 시간 설정이 없는 경우
+                for (const currentDate of dates) {
+                    instances.push([scheduleId, currentDate, null]);
+                };
+            };
+
+            // 인스턴스 벌크 삽입
+            if (instances.length > 0) {
+                await connection.query(
+                    `INSERT INTO schedule_instances (schedule_id, scheduled_date, scheduled_time)
+                     VALUES ?`,
+                    [instances]
+                );
+            };
+
+            await connection.commit();
             return scheduleId;
 
         } catch (error) {
             await connection.rollback();
             throw error;
         } finally {
-            connection.release(); // 연결 해제
-        }
+            connection.release();
+        };
     };
+
+    // 반복 날짜 생성 헬퍼 함수 (3개월로 고정) -- private helper method
+    static #generateRepeatDates(startDate, repeatType) {
+        const dates = [startDate];
+        const date = new Date(startDate);
+        const endDate = new Date(date);
+        endDate.setMonth(endDate.getMonth() + 3);  // 3개월 후
+
+        while (date < endDate) {
+            switch (repeatType) {
+                case 'daily':
+                    date.setDate(date.getDate() + 1);
+                    break;
+                case 'weekly':
+                    date.setDate(date.getDate() + 7);
+                    break;
+                case 'monthly':
+                    date.setMonth(date.getMonth() + 1);
+                    break;
+            };
+
+            if (date < endDate) {
+                dates.push(date.toISOString().split('T')[0]);
+            };
+        };
+
+        return dates;
+    };
+
 
     //일정 조회
     static async getScheduleList(scheduleDate) {
@@ -66,7 +118,6 @@ class Schedule {
                 d.dog_name,
                 s.schedule_type,
                 s.description,
-                s.is_completed,
                 sn.enabled as notification_enabled,
                 sn.minutes as notification_minutes,
                 si.scheduled_time,
@@ -81,11 +132,10 @@ class Schedule {
             ORDER BY si.scheduled_time, d.dog_name ASC`,
             [scheduleDate]
         );
-
         return schedules;
     };
 
-    static async getScheduleDetail(scheduleId) {
+    static async getScheduleDetail(schedule_id) {
         const [schedules] = await db.query(
             `SELECT 
                 s.schedule_id,
@@ -103,9 +153,8 @@ class Schedule {
             LEFT JOIN schedule_notifications n ON s.schedule_id = n.schedule_id
             LEFT JOIN schedule_repeats r ON s.schedule_id = r.schedule_id
             WHERE s.schedule_id = ?`,
-            [scheduleId]
+            [schedule_id]
         );
-
         return schedules[0];
     };
 
