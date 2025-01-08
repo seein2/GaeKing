@@ -16,4 +16,8 @@ router.delete('/:id', remove);
 router.post('/:id/invite', invitation);
 router.post('/join', join_invitation);
 
+//위젯 기능
+router.get('/:id/widget', widgetList);    
+router.post('/:id/widget', toggleWidget);
+
 module.exports = router;
