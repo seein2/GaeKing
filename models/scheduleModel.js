@@ -15,8 +15,7 @@ class Schedule {
             );
             const scheduleId = scheduleResult.insertId;
 
-            // 2. 반복 설정 생성 (있는 경우)
-            // repeat_count는 하루에 반복하는 횟수
+            // 2. 반복 설정 생성
             if (repeat && repeat.type !== 'none') {
                 await connection.query(
                     `INSERT INTO schedule_repeats (schedule_id, repeat_type, repeat_count)
@@ -25,7 +24,7 @@ class Schedule {
                 );
             };
 
-            // 3. 알림 설정 생성 (있는 경우)
+            // 3. 알림 설정 생성
             if (notification?.enabled) {
                 await connection.query(
                     `INSERT INTO schedule_notifications (schedule_id, enabled, minutes)
@@ -37,26 +36,31 @@ class Schedule {
             // 4. 인스턴스 생성
             const instances = [];
 
-            // 반복 날짜 계산 (3개월) 
-            let dates = [date];
-            if (repeat && repeat.type !== 'none') {
-                dates = this.#generateRepeatDates(date, repeat.type);
-            };
+            // 반복 날짜 계산 (3개월)
+            const dates = repeat && repeat.type !== 'none'
+                ? this.#generateRepeatDates(date, repeat.type)
+                : [date];
 
             // 시간 설정이 있는 경우
             if (times && times.length > 0) {
                 for (const currentDate of dates) {
                     for (const time of times) {
-                        instances.push([
+                        const instance = [
                             scheduleId,
                             currentDate,
                             `${String(time.hour).padStart(2, '0')}:${String(time.minute).padStart(2, '0')}`
-                        ]);
-                    };
-                };
-            } else {// 시간 설정이 없는 경우
+                        ];
+                        instances.push(instance);
+                        console.log('생성된 인스턴스:', instance);
+                    }
+                }
+            } else { // 시간 설정이 없는 경우
                 for (const currentDate of dates) {
-                    instances.push([scheduleId, currentDate, null]);
+                    const count = (repeat?.type === 'daily' ? repeat.count : 1) || 1;
+                    for (let i = 0; i < count; i++) {
+                        const instance = [scheduleId, currentDate, null];
+                        instances.push(instance);
+                    }
                 };
             };
 
@@ -109,7 +113,7 @@ class Schedule {
     };
 
 
-    //일정 조회
+    // 일정 조회
     static async getScheduleList(scheduleDate) {
         const [schedules] = await db.query(
             `SELECT 
@@ -118,44 +122,85 @@ class Schedule {
                 d.dog_name,
                 s.schedule_type,
                 s.description,
-                sn.enabled as notification_enabled,
-                sn.minutes as notification_minutes,
-                si.scheduled_time,
-                sr.repeat_type,
-                sr.repeat_count
+                MAX(sn.enabled) as notification_enabled,
+                MAX(sn.minutes) as notification_minutes,
+                MIN(si.scheduled_time) as scheduled_time,
+                MAX(sr.repeat_type) as repeat_type,
+                MAX(sr.repeat_count) as repeat_count
             FROM schedules s
             JOIN dogs d ON s.dog_id = d.dog_id
             LEFT JOIN schedule_notifications sn ON s.schedule_id = sn.schedule_id
             LEFT JOIN schedule_repeats sr ON s.schedule_id = sr.schedule_id
             LEFT JOIN schedule_instances si ON s.schedule_id = si.schedule_id
             WHERE si.scheduled_date = ?
-            ORDER BY si.scheduled_time, d.dog_name ASC`,
+            GROUP BY 
+                s.schedule_id,
+                d.dog_id,
+                d.dog_name,
+                s.schedule_type,
+                s.description
+            ORDER BY MIN(si.scheduled_time), d.dog_name ASC
+        `,
             [scheduleDate]
         );
         return schedules;
     };
 
-    static async getScheduleDetail(schedule_id) {
+    // 일정 상세
+    static async getScheduleDetail(schedule_id, date) {
         const [schedules] = await db.query(
             `SELECT 
                 s.schedule_id,
+                d.dog_id,
                 d.dog_name,
                 s.schedule_type,
                 s.description,
-                s.schedule_date,
-                s.schedule_time,
-                s.is_completed,
-                n.notification_type,
-                r.repeat_type,
-                r.repeat_end_date
+                si.instance_id,
+                si.scheduled_time,
+                si.is_completed,
+                si.completion_time,
+                sr.repeat_type,
+                sn.enabled as notification_enabled,
+                sn.minutes as notification_minutes
             FROM schedules s
             JOIN dogs d ON s.dog_id = d.dog_id
-            LEFT JOIN schedule_notifications n ON s.schedule_id = n.schedule_id
-            LEFT JOIN schedule_repeats r ON s.schedule_id = r.schedule_id
-            WHERE s.schedule_id = ?`,
-            [schedule_id]
+            JOIN schedule_instances si ON s.schedule_id = si.schedule_id
+            LEFT JOIN schedule_repeats sr ON s.schedule_id = sr.schedule_id
+            LEFT JOIN schedule_notifications sn ON s.schedule_id = sn.schedule_id
+            WHERE s.schedule_id = ?
+            AND si.scheduled_date = ?
+            AND si.is_deleted = FALSE
+            ORDER BY si.scheduled_time`,
+            [schedule_id, date]
         );
-        return schedules[0];
+
+        // 결과가 없는 경우
+        if (!schedules || schedules.length === 0) {
+            return null;
+        }
+
+        // 기본 스케줄 정보는 한 번만
+        const schedule = {
+            schedule_id: schedules[0].schedule_id,
+            dog_id: schedules[0].dog_id,
+            dog_name: schedules[0].dog_name,
+            schedule_type: schedules[0].schedule_type,
+            description: schedules[0].description,
+            repeat_type: schedules[0].repeat_type,
+            notification: {
+                enabled: schedules[0].notification_enabled,
+                minutes: schedules[0].notification_minutes
+            },
+            // 해당 날짜의 모든 인스턴스
+            instances: schedules.map(item => ({
+                instance_id: item.instance_id,
+                scheduled_time: item.scheduled_time,
+                is_completed: item.is_completed,
+                completion_time: item.completion_time
+            }))
+        };
+        console.log(schedule);
+        return schedule;
     };
 
     // 일정 수정
