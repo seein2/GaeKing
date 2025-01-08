@@ -167,6 +167,27 @@ exports.remove = async (req, res) => {
     }
 };
 
+
+//활성화된 위젯 조회
+exports.widgetList = async (req, res) => {
+    const { dog_id } = req.params;
+    try {
+        const result = await Dog.getWidgets(dog_id);
+        return res.status(200).json({
+            success: true,
+            message: '위젯 목록 조회',
+            result,
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: '위젯 조회 중 오류 발생',
+        });
+    }
+};
+
+
+
 exports.invitation = async (req, res) => {
     const { dog_id } = req.params;
     const connection = await db.getConnection();
