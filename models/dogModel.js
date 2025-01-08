@@ -112,6 +112,19 @@ class Dog {
     };
 
     
+    // 위젯 활성화/비활성화
+    static async toggleWidget(dogId, schedule_type, is_active) {
+        const [result] = await db.query(
+            `INSERT INTO dog_widgets(dog_id, schedule_type, is_active)
+            VALUES(?, ?, ?)
+            ON DUPLICATE KEY UPDATE is_active = ?`,
+            [dogId, schedule_type, is_active, is_active]
+        );
+        return result;
+    };
+
+
+
     // 사용자의 강아지인지 확인
     static async checkOwner(dogId, userId, connection) {
         const [rows] = await connection.query(
