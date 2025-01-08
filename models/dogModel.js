@@ -111,8 +111,36 @@ class Dog {
         return rows.length > 0;
     };
 
-    // 초대 코드 생성
-    static async invitation(dogId, connection) {
+    // 초대
+    static async createInvitation(dogId, userId) {
+        const connection = await db.getConnection();
+        console.log(dogId, userId);
+        try {
+            await connection.beginTransaction();
+
+            // 권한 체크
+            const [owner] = await connection.query(
+                'SELECT * FROM dog_user WHERE dog_id = ? AND user_id = ?',
+                [dogId, userId]
+            );
+
+            if (!owner) {
+                throw new Error('초대 코드 생성 권한이 없습니다.');
+            }
+            const code = await this.generateInvitationCode(dogId, connection);
+
+            await connection.commit();
+            return code;
+        } catch (error) {
+            await connection.rollback();
+            throw error;
+        } finally {
+            connection.release();
+        };
+    };
+
+    // 초대코드 발급
+    static async generateInvitationCode(dogId, connection) {
         const createCode = () => {
             const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
             let code = '';
@@ -122,40 +150,69 @@ class Dog {
             return code;
         };
 
-        const codeTime = new Date(Date.now() + 3*60*1000);
+        const codeTime = new Date(Date.now() + 3 * 60 * 1000);
         const code = createCode();
-        
+
         await connection.query(
-            `INSERT INTO dog_invitation(dog_id, code, codeTime) VALUES(?, ?, ?)`,
+            `INSERT INTO dog_invitations(dog_id, code, codeTime) VALUES(?, ?, ?)`,
             [dogId, code, codeTime]
         );
 
         return code;
     };
 
-    // 초대 코드 확인
-    static async check(code) {
-        const [result] = await db.query(
-            `SELECT * FROM dog_invitation WHERE code = ? AND is_used  = FALSE AND codeTime > CURRENT_TIMESTAMP`,
-            [code]
-        );
-        return result;
+    static async acceptInvitation(code, userId) {
+        const connection = await db.getConnection();
+
+        try {
+            await connection.beginTransaction();
+
+            // 초대 코드 확인
+            const [invitation] = await connection.query(
+                `SELECT * FROM dog_invitations WHERE code = ? AND is_used = FALSE AND codeTime > CURRENT_TIMESTAMP`,
+                [code]
+            );
+
+            if (!invitation) {
+                throw new Error('초대 코드가 유효하지 않습니다.');
+            }
+
+            // 이미 멤버인지 확인
+            const [existingMember] = await connection.query(
+                `SELECT * FROM dog_user WHERE dog_id = ? AND user_id = ?`,
+                [invitation.dog_id, userId]
+            );
+
+            if (existingMember) {
+                throw new Error('이미 등록된 사용자입니다.');
+            }
+
+            // 멤버 추가 및 초대 코드 사용 처리
+            await connection.query(
+                `INSERT INTO dog_user(dog_id, user_id) VALUES(?, ?)`,
+                [invitation.dog_id, userId]
+            );
+
+            await connection.query(
+                'UPDATE dog_invitations SET is_used = TRUE WHERE code = ?',
+                [code]
+            );
+
+            // 강아지 정보 조회
+            const [dogInfo] = await connection.query(
+                'SELECT * FROM dogs WHERE dog_id = ?',
+                [invitation.dog_id]
+            );
+
+            await connection.commit();
+            return dogInfo;
+        } catch (error) {
+            await connection.rollback();
+            throw error;
+        } finally {
+            connection.release();
+        }
     };
-
-    // 초대 코드 허락
-    static async accept(dogId, userId, code, connection) {
-        await connection.query(
-            `INSERT INTO dog_user(dog_id, user_id) VALUES(?, ?)`,
-            [dogId, userId]
-        );
-
-        await connection.query(
-            'UPDATE dog_invitation SET is_used = TRUE WHERE code = ?',
-            [code]
-        );
-    };
-
-
 
 };
 
