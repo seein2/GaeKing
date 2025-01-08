@@ -51,7 +51,8 @@ exports.getScheduleList = async (req, res) => {
 exports.getScheduleDetail = async (req, res) => {
     try {
         const { schedule_id } = req.params;
-        const schedule = await Schedule.getScheduleDetail(schedule_id);
+        const { date } = req.query;
+        const schedule = await Schedule.getScheduleDetail(schedule_id, date);
 
         if (!schedule) {
             return res.status(404).json({
