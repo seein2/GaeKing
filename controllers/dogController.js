@@ -168,87 +168,40 @@ exports.remove = async (req, res) => {
 };
 
 exports.invitation = async (req, res) => {
-    const { dog_id } = req.params;
-    const connection = await db.getConnection();
-
+    const { id } = req.params;
+    const user_id = req.user.user_id;
     try {
-        await connection.beginTransaction();
-
-
-        const owner = await Dog.invitation(dog_id, req.user.user_id, connection);
-        if (!owner) {
-            return res.status(403).json({
-                success: false,
-                message: '초대 코드 생성 권한이 없습니다.',
-            });
-        }
-
-        // 초대 코드 생성
-        const code = await Dog.createInvitation(dog_id, connection);
-        // dogId -> dog_id (dogId는 없어요)
-
-        await connection.commit();
+        const code = await Dog.createInvitation(id, user_id);
 
         return res.status(200).json({
             success: true,
             message: '초대 코드가 생성되었습니다.',
-            result,
+            result: { code }
         });
+
     } catch (error) {
-        await connection.rollback();
-        res.status(500).json({
+        return res.status(error.message.includes('권한') ? 403 : 500).json({
             success: false,
-            message: '초대 코드 생성 중 오류 발생',
+            message: error.message || '초대 코드 생성 중 오류 발생'
         });
-    } finally {
-        connection.release();
     }
-}; // 또 invitation함수 안에다가 join_invitation를 만들었네요
+};
 
-exports.join_invitation = async (req, res) => {
-    const { code } = req.params;
-    const user_id = req.user.user_id;
-    const connection = await db.getConnection();
-
-
+exports.joinInvitation = async (req, res) => {
     try {
-        await connection.beginTransaction();
-
-        //초대 코드 확인
-        const result = await Dog.check(code);
-        if (!result) {
-            return res.status(404).json({
-                success: false,
-                message: '초대 코드가 유효하지 않습니다.',
-            });
-        }
-
-        //이미 초대된 사람일 경우
-        const AlreadyMember = await Dog.checkOwner(invitation.dog_id, user_id, connection); // userId도 없어요 user_id예요
-        if (AlreadyMember) { // 위에 AlreadyMember라고 선언해놓고 isAlreadyMember는 없어요
-            return res.status(400).json({
-                success: false,
-                message: '이미 등록된 사용자입니다.'
-            });
-        }
-
-        //초대 수락
-        await Dog.accept(result.dog_id, user_id, code, connection);
-
-        await connection.commit();
-
-        const info = await Dog.findById(result.dog_id);
+        const dogInfo = await Dog.acceptInvitation(req.params.code, req.user.user_id);
 
         return res.status(200).json({
             success: true,
             message: '해당 강아지의 멤버 초대 완료',
-            result: info,
+            result: dogInfo
         });
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: '초대 코드 확인 중 오류 발생',
-        });
+        return res.status(error.message.includes('유효하지 않') ? 404 :
+            error.message.includes('이미 등록된') ? 400 : 500).json({
+                success: false,
+                message: error.message || '초대 코드 확인 중 오류 발생'
+            });
     }
-}; // 세미콜론과 코드 포맷팅 부탁드려요^^
+};
 
