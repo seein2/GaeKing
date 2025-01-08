@@ -102,6 +102,16 @@ class Dog {
         return result;
     };
 
+    // 각 강아지의 활성화된 위젯 조회
+    static async getWidgets(dogId) {
+        const [widgets] = await db.query(
+            `SELECT schedule_type FROM dog_widgets WHERE dog_id = ? AND is_active = TRUE`,
+            [dogId]
+        );
+        return widgets;
+    };
+
+    
     // 사용자의 강아지인지 확인
     static async checkOwner(dogId, userId, connection) {
         const [rows] = await connection.query(
