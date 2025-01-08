@@ -186,6 +186,24 @@ exports.widgetList = async (req, res) => {
     }
 };
 
+//위젯 활성화/비활성화 토글
+exports.toggleWidget = async (req, res) => {
+    const { dog_id, schedule_type } = req.body;
+    try {
+        const result = await Dog.toggleWidget(dog_id, schedule_type);
+        return res.status(200).json({
+            success: true,
+            message: '위젯 상태 변경',
+            result,
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: '위젯 상태 변경 중 오류 발생',
+        });
+    }
+};
+
 
 
 exports.invitation = async (req, res) => {
