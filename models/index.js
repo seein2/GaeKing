@@ -98,32 +98,6 @@ async function initializeDB() {
             );
         `)
 
-        // ----------------------위젯 관련 테이블----------------------
-        await db.query(`
-            CREATE TABLE IF NOT EXISTS widgets (
-                type_id INT PRIMARY KEY AUTO_INCREMENT,
-                type_name VARCHAR(50) NOT NULL,
-                description TEXT,
-                icon VARCHAR(100)
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            );
-        `);
-
-        await db.query(` 
-            CREATE TABLE IF NOT EXISTS dog_widget (
-                dog_id INT,
-                schedule_type ENUM('식사', '산책', '간식', '목욕', '병원', '기타') NOT NULL,
-                is_active BOOLEAN DEFAULT true,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                PRIMARY KEY (dog_id, schedule_type),
-                FOREIGN KEY (dog_id) REFERENCES dogs(dog_id) ON DELETE CASCADE
-            );
-        `)
-
-        // ----------------------위젯 관련 테이블----------------------
-
-        
 
         // 리프레시토큰 테이블
         await db.query(`
