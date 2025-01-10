@@ -19,6 +19,7 @@ app.set('port', process.env.PORT || 3000);
 app.use(morgan('dev')); //combined
 app.use(express.json());
 app.use(cors()); // 다른 도메인에서 요청 허용
+app.use('/uploads', express.static('uploads')); // 정적 파일 제공
 
 app.use('/auth', authRouter);
 app.use('/dog', dogRouter);
