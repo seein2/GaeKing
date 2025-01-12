@@ -1,10 +1,10 @@
 // controllers/widget.controller.js
 const Widget = require('../models/widgetModel');
 
-exports.getSettings = async (req, res, next) => {
+exports.getSettings = async (req, res) => {
     try {
-        const { dogId } = req.params;
-        const settings = await Widget.getSettings(dogId);
+        const { dog_id } = req.params;
+        const settings = await Widget.getSettings(dog_id);
 
         return res.status(201).json({
             success: true,
@@ -19,10 +19,10 @@ exports.getSettings = async (req, res, next) => {
     }
 };
 
-exports.getActiveWidgets = async (req, res, next) => {
+exports.getActiveWidgets = async (req, res) => {
     try {
-        const { dogId } = req.params;
-        const widgets = await Widget.getActiveWidgets(dogId);
+        const { dog_id } = req.params;
+        const widgets = await Widget.getActiveWidgets(dog_id);
 
         return res.status(201).json({
             success: true,
@@ -37,16 +37,16 @@ exports.getActiveWidgets = async (req, res, next) => {
     }
 };
 
-exports.updateWidget = async (req, res, next) => {
+exports.updateWidget = async (req, res) => {
     try {
-        const { dogId } = req.params;
-        const { widgetType, isActivated } = req.body;
+        const { dog_id } = req.params;
+        const { widget_types } = req.body;  // { '식사': true, '산책': true, ... }
 
-        if (!widgetType || isActivated === undefined) {
-            return res.status(400).json({ message: '필수 정보가 누락되었습니다.' });
+        // 각 위젯 타입에 대해 업데이트 수행
+        for (const [widgetType, isActivated] of Object.entries(widget_types)) {
+            await Widget.updateWidget(dog_id, widgetType, isActivated);
         }
 
-        await Widget.updateWidget(dogId, widgetType, isActivated);
         return res.status(201).json({
             success: true,
             message: '위젯 업데이트 성공',
