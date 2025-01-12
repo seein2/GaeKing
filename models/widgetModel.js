@@ -9,7 +9,7 @@ class Widget {
             WHERE dog_id = ?
         `, [dogId]);
 
-        const allTypes = ['식사', '산책', '간식', '목욕', '병원', '기타'];
+        const allTypes = ['식사', '산책', '간식', '목욕', '병원', '기타', '생일'];
         const result = {};
 
         allTypes.forEach(type => {
@@ -19,7 +19,7 @@ class Widget {
 
         return result;
         //반환 형태: { '식사': true, '산책': false, ... }
-    }
+    };
 
     // 강아지의 활성화된 위젯 정보만 가져오기 
     static async getActiveWidgets(dogId) {
