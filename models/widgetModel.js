@@ -38,7 +38,7 @@ class Widget {
         `, [dogId]);
         return widgets;
         //반환 형태: [{ widget_type: '산책', today_count: 3, completed_count: 1 }, ...]
-    }
+    };
 
     // 위젯 활성화/비활성화 설정
     static async updateWidget(dogId, widgetType, isActivated) {
@@ -48,7 +48,7 @@ class Widget {
             ON DUPLICATE KEY UPDATE is_activated = ?
         `, [dogId, widgetType, isActivated, isActivated]);
         return result;
-    }
-}
+    };
+};
 
 module.exports = Widget;
