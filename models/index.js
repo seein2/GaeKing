@@ -86,11 +86,11 @@ async function initializeDB() {
         `);
         // ----------------------스케쥴 관련 테이블----------------------
 
-        // ----------------------위젯 관련 테이블----------------------
+        // ----------------------위젯 테이블----------------------
         await db.query(`
             CREATE TABLE IF NOT EXISTS widgets (
                 dog_id INT NOT NULL,
-                widget_type ENUM('식사', '산책', '간식', '목욕', '병원', '기타') NOT NULL,
+                widget_type ENUM('식사', '산책', '간식', '목욕', '병원', '기타', '생일') NOT NULL,
                 is_activated BOOLEAN DEFAULT false,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
