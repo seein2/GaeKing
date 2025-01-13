@@ -27,15 +27,29 @@ class Widget {
             SELECT 
                 w.widget_type,
                 COUNT(si.instance_id) as today_count,
-                COUNT(CASE WHEN si.is_completed = true THEN 1 END) as completed_count
+                COUNT(CASE WHEN si.is_completed = true THEN 1 END) as completed_count,
+                NULL as birth_date
             FROM widgets w
             LEFT JOIN schedules s ON w.dog_id = s.dog_id AND w.widget_type = s.schedule_type
             LEFT JOIN schedule_instances si ON s.schedule_id = si.schedule_id 
                 AND DATE(si.scheduled_date) = CURRENT_DATE()
                 AND si.is_deleted = false
             WHERE w.dog_id = ? AND w.is_activated = true
-            GROUP BY w.widget_type
-        `, [dogId]);
+                AND w.widget_type != '생일'                
+            GROUP BY w.widget_type  
+
+            UNION ALL
+
+            SELECT 
+                w.widget_type,
+                0 as today_count,
+                0 as completed_count,
+                DATE_FORMAT(d.birth_date, '%m-%d') as birth_date
+            FROM widgets w
+            JOIN dogs d ON w.dog_id = d.dog_id
+            WHERE w.dog_id = ? AND w.is_activated = true
+                AND w.widget_type = '생일'
+        `, [dogId, dogId]);
         return widgets;
         //반환 형태: [{ widget_type: '산책', today_count: 3, completed_count: 1 }, ...]
     };
