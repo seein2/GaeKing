@@ -134,3 +134,23 @@ exports.removeSchedule = async (req, res) => {
         });
     }
 };
+
+exports.completionSchedule = async (req, res) => {
+    try {
+        const { instance_id } = req.params;
+        const { is_completed } = req.body;
+        const result = await Schedule.completionSchedule(instance_id, is_completed);
+
+        return res.status(201).json({
+            success: true,
+            message: '스케줄이 완료되었습니다.',
+            result: result,
+        });
+    } catch (error) {
+        console.error('스케줄 완료 에러:', error);
+        res.status(500).json({
+            success: false,
+            message: '스케줄 완료 중 오류가 발생했습니다.'
+        });
+    }
+};
