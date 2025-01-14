@@ -51,7 +51,6 @@ class Schedule {
                             `${String(time.hour).padStart(2, '0')}:${String(time.minute).padStart(2, '0')}`
                         ];
                         instances.push(instance);
-                        console.log('생성된 인스턴스:', instance);
                     }
                 }
             } else { // 시간 설정이 없는 경우
@@ -160,6 +159,7 @@ class Schedule {
                 si.is_completed,
                 si.completed_time,
                 sr.repeat_type,
+                sr.repeat_count,
                 sn.enabled as notification_enabled,
                 sn.minutes as notification_minutes
             FROM schedules s
@@ -187,6 +187,7 @@ class Schedule {
             schedule_type: schedules[0].schedule_type,
             description: schedules[0].description,
             repeat_type: schedules[0].repeat_type,
+            repeat_count: schedules[0].repeat_count,
             notification: {
                 enabled: schedules[0].notification_enabled,
                 minutes: schedules[0].notification_minutes
@@ -199,7 +200,6 @@ class Schedule {
                 completed_time: item.completed_time
             }))
         };
-        console.log(schedule);
         return schedule;
     };
 
