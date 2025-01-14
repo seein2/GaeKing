@@ -77,7 +77,7 @@ async function initializeDB() {
                 scheduled_time TIME,
                 is_deleted BOOLEAN DEFAULT FALSE, -- 개별 삭제 관리
                 is_completed BOOLEAN DEFAULT FALSE, -- 상태 관리
-                completion_time DATETIME,
+                completed_time DATETIME,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                 FOREIGN KEY (schedule_id) REFERENCES schedules(schedule_id) ON DELETE CASCADE,

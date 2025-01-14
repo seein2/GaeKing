@@ -158,7 +158,7 @@ class Schedule {
                 si.instance_id,
                 si.scheduled_time,
                 si.is_completed,
-                si.completion_time,
+                si.completed_time,
                 sr.repeat_type,
                 sn.enabled as notification_enabled,
                 sn.minutes as notification_minutes
@@ -196,7 +196,7 @@ class Schedule {
                 instance_id: item.instance_id,
                 scheduled_time: item.scheduled_time,
                 is_completed: item.is_completed,
-                completion_time: item.completion_time
+                completed_time: item.completed_time
             }))
         };
         console.log(schedule);
@@ -282,7 +282,7 @@ class Schedule {
         try {
             const [result] = await db.query(
                 `UPDATE schedule_instances
-                SET is_completed = ?, completed_time = ?,
+                SET is_completed = ?, completed_time = ?
                 WHERE instance_id = ?`,
                 [is_completed, is_completed ? new Date() : null, instance_id]
             );
