@@ -211,12 +211,12 @@ class Schedule {
             // 1. 기본 스케줄 정보 수정
             await db.query(
                 `UPDATE schedules 
-             SET schedule_type = ?, 
-                 description = ?, 
-                 schedule_date = ?, 
-                 schedule_time = ?, 
-                 is_completed = ?
-             WHERE schedule_id = ?`,
+                SET schedule_type = ?, 
+                    description = ?, 
+                    schedule_date = ?, 
+                    schedule_time = ?, 
+                    is_completed = ?
+                WHERE schedule_id = ?`,
                 [schedule_type, description, schedule_date, schedule_time, is_completed, scheduleId]
             );
 
@@ -229,7 +229,7 @@ class Schedule {
             if (!is_completed && notification_type && notification_type !== 'none') {
                 await db.query(
                     `INSERT INTO schedule_notifications (schedule_id, notification_type)
-                 VALUES (?, ?)`,
+                     VALUES (?, ?)`,
                     [scheduleId, notification_type]
                 );
             };
@@ -243,7 +243,7 @@ class Schedule {
             if (!is_completed && repeat_type && repeat_type !== 'none') {
                 await db.query(
                     `INSERT INTO schedule_repeats (schedule_id, repeat_type, repeat_end_date)
-                 VALUES (?, ?, ?)`,
+                     VALUES (?, ?, ?)`,
                     [scheduleId, repeat_type, repeat_end_date]
                 );
             };
@@ -276,6 +276,21 @@ class Schedule {
             await db.rollback();
             throw error;
         };
+    };
+
+    static async completionSchedule(instance_id, is_completed) {
+        try {
+            const [result] = await db.query(
+                `UPDATE schedule_instances
+                SET is_completed = ?, completed_time = ?,
+                WHERE instance_id = ?`,
+                [is_completed, is_completed ? new Date() : null, instance_id]
+            );
+
+            return result;
+        } catch (error) {
+            throw error;
+        }
     };
 
 };
