@@ -261,19 +261,14 @@ class Schedule {
 
     static async delete(scheduleId) {
         try {
-            await db.beginTransaction();
 
             const [result] = await db.query(
                 `DELETE FROM schedules WHERE schedule_id = ?`,
                 [scheduleId]
             );
-
-            await db.commit();
-
             return result;
 
         } catch (error) {
-            await db.rollback();
             throw error;
         };
     };
