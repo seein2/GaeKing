@@ -112,6 +112,70 @@ async function initializeDB() {
             );
         `)
 
+        //---------------------SNS 관련 테이블----------------------
+
+        //SNS 프로필 테이블
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS sns_profiles (
+            profile_id INT PRIMARY KEY AUTO_INCREMENT,
+            dog_id INT NOT NULL UNIQUE,
+            sns_id VARCHAR(50) NOT NULL UNIQUE,
+            INDEX idx_sns_id (sns_id),
+            bio TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            FOREIGN KEY (dog_id) REFERENCES dogs(dog_id) ON DELETE CASCADE
+            );
+        `)
+
+        //SNS 게시물 테이블
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS posts (
+            post_id INT PRIMARY KEY AUTO_INCREMENT,
+            profile_id INT NOT NULL,
+            content TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            FOREIGN KEY (profile_id) REFERENCES sns_profiles(profile_id) ON DELETE CASCADE
+            );
+        `)
+
+        //게시물 이미지 테이블
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS post_images (
+            image_id INT PRIMARY KEY AUTO_INCREMENT,
+            post_id INT NOT NULL,
+            image_url VARCHAR(255) NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (post_id) REFERENCES posts(post_id) ON DELETE CASCADE
+            );
+        `)
+
+        //팔로우 관계 테이블
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS follows (
+            follower_id INT NOT NULL,
+            following_id INT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (follower_id, following_id),
+            FOREIGN KEY (follower_id) REFERENCES sns_profiles(profile_id),
+            FOREIGN KEY (following_id) REFERENCES sns_profiles(profile_id)
+            );
+        `)
+
+        //좋아요 테이블
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS likes (
+            post_id INT NOT NULL,
+            profile_id INT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (post_id, profile_id),
+            FOREIGN KEY (post_id) REFERENCES posts(post_id) ON DELETE CASCADE,
+            FOREIGN KEY (profile_id) REFERENCES sns_profiles(profile_id) ON DELETE CASCADE
+            );
+        `)
+        //---------------------SNS 관련 테이블----------------------
+
 
         // 리프레시토큰 테이블
         await db.query(`
