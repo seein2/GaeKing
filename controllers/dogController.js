@@ -167,6 +167,45 @@ exports.remove = async (req, res) => {
     }
 };
 
+
+//활성화된 위젯 조회
+exports.widgetList = async (req, res) => {
+    const { dog_id } = req.params;
+    try {
+        const result = await Dog.getWidgets(dog_id);
+        return res.status(200).json({
+            success: true,
+            message: '위젯 목록 조회',
+            result,
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: '위젯 조회 중 오류 발생',
+        });
+    }
+};
+
+//위젯 활성화/비활성화 토글
+exports.toggleWidget = async (req, res) => {
+    const { dog_id, schedule_type } = req.body;
+    try {
+        const result = await Dog.toggleWidget(dog_id, schedule_type);
+        return res.status(200).json({
+            success: true,
+            message: '위젯 상태 변경',
+            result,
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: '위젯 상태 변경 중 오류 발생',
+        });
+    }
+};
+
+
+
 exports.invitation = async (req, res) => {
     const { id } = req.params;
     const user_id = req.user.user_id;
