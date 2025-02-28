@@ -11,6 +11,7 @@ require('./models'); // db연결
 dotenv.config();
 const authRouter = require('./routes/authRoutes');
 const dogRouter = require('./routes/dogRoutes');
+const scheduleRouter = require('./routes/scheduleRoutes');
 
 const app = express();
 app.set('port', process.env.PORT || 3000);
@@ -23,6 +24,7 @@ app.use('/uploads', express.static('uploads')); // 정적 파일 제공
 
 app.use('/auth', authRouter);
 app.use('/dog', dogRouter);
+app.use('/schedule', scheduleRouter);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDoc));
 app.get('/', (req, res) => {
     res.send('GaeKing 서버');

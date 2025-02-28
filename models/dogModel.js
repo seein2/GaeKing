@@ -113,34 +113,21 @@ class Dog {
 
     // 초대
     static async createInvitation(dogId, userId) {
-        const connection = await db.getConnection();
-        console.log(dogId, userId);
-        try {
-            await connection.beginTransaction();
+        // 권한 체크
+        const [owner] = await db.query(
+            'SELECT * FROM dog_user WHERE dog_id = ? AND user_id = ?',
+            [dogId, userId]
+        );
 
-            // 권한 체크
-            const [owner] = await connection.query(
-                'SELECT * FROM dog_user WHERE dog_id = ? AND user_id = ?',
-                [dogId, userId]
-            );
-
-            if (!owner) {
-                throw new Error('초대 코드 생성 권한이 없습니다.');
-            }
-            const code = await this.generateInvitationCode(dogId, connection);
-
-            await connection.commit();
-            return code;
-        } catch (error) {
-            await connection.rollback();
-            throw error;
-        } finally {
-            connection.release();
-        };
+        if (!owner) {
+            throw new Error('초대 코드 생성 권한이 없습니다.');
+        }
+        return await this.generateInvitationCode(dogId);
     };
 
     // 초대코드 발급
-    static async generateInvitationCode(dogId, connection) {
+    static async generateInvitationCode(dogId) {
+        // 코드 생성 함수
         const createCode = () => {
             const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
             let code = '';
@@ -153,7 +140,7 @@ class Dog {
         const codeTime = new Date(Date.now() + 3 * 60 * 1000);
         const code = createCode();
 
-        await connection.query(
+        await db.query(
             `INSERT INTO dog_invitations(dog_id, code, codeTime) VALUES(?, ?, ?)`,
             [dogId, code, codeTime]
         );

@@ -38,6 +38,54 @@ async function initializeDB() {
             );
         `);
 
+        // ----------------------스케쥴 관련 테이블----------------------
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS schedules (
+                schedule_id INT PRIMARY KEY AUTO_INCREMENT,
+                dog_id INT NOT NULL,
+                schedule_type ENUM('식사', '산책', '간식', '목욕', '병원', '기타') NOT NULL,
+                description TEXT,
+                schedule_date DATE NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                FOREIGN KEY (dog_id) REFERENCES dogs(dog_id) ON DELETE CASCADE
+            );
+        `);
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS schedule_repeats ( -- 스케쥴 반복 테이블
+                repeat_id INT PRIMARY KEY AUTO_INCREMENT,
+                schedule_id INT NOT NULL,
+                repeat_type ENUM('none', 'daily', 'weekly', 'monthly') NOT NULL,
+                repeat_count INT CHECK (repeat_count BETWEEN 1 AND 5),  -- daily 반복일 때 사용
+                FOREIGN KEY (schedule_id) REFERENCES schedules(schedule_id) ON DELETE CASCADE
+            );
+        `);
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS schedule_notifications ( -- 스케쥴 알림 테이블
+                notification_id INT PRIMARY KEY AUTO_INCREMENT,
+                schedule_id INT NOT NULL,
+                enabled BOOLEAN NOT NULL DEFAULT FALSE,
+                minutes INT CHECK (minutes IN (0, 10, 30, 60)) NOT NULL,
+                FOREIGN KEY (schedule_id) REFERENCES schedules(schedule_id) ON DELETE CASCADE
+            );
+        `);
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS schedule_instances ( -- 실제 스케줄 발생 정보
+                instance_id INT PRIMARY KEY AUTO_INCREMENT,
+                schedule_id INT NOT NULL,
+                scheduled_date DATE NOT NULL,
+                scheduled_time TIME,
+                is_deleted BOOLEAN DEFAULT FALSE, -- 개별 삭제 관리
+                is_completed BOOLEAN DEFAULT FALSE, -- 상태 관리
+                completed_time DATETIME,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                FOREIGN KEY (schedule_id) REFERENCES schedules(schedule_id) ON DELETE CASCADE,
+                INDEX idx_schedule_date (schedule_id, scheduled_date)
+            );
+        `);
+        // ----------------------스케쥴 관련 테이블----------------------
+
         //사용자 초대
         await db.query(`
             CREATE TABLE IF NOT EXISTS dog_invitations (
@@ -58,7 +106,7 @@ async function initializeDB() {
                 token VARCHAR(255),
                 expires_at TIMESTAMP,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (user_id) REFERENCES users(user_id)
+                FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
             );
         `);
 
