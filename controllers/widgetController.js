@@ -1,4 +1,3 @@
-// controllers/widget.controller.js
 const Widget = require('../models/widgetModel');
 
 exports.getSettings = async (req, res) => {
