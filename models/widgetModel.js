@@ -64,7 +64,7 @@ class Widget {
             FROM widgets w
             LEFT JOIN schedules s ON w.dog_id = s.dog_id AND w.widget_type = s.schedule_type
             LEFT JOIN schedule_instances si ON s.schedule_id = si.schedule_id 
-                AND DATE(si.scheduled_date) = CURRENT_DATE()
+                AND si.scheduled_date = CURRENT_DATE()
                 AND si.is_deleted = false
             WHERE w.dog_id = ? AND w.is_activated = true
                 AND w.widget_type != '생일'                
