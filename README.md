@@ -90,8 +90,8 @@
 ### 설치
 1. 레포지토리 클론
 ```bash
-git clone https://github.com/yourusername/pet-management-api.git
-cd pet-management-api
+git clone https://github.com/seein2/GaeKing.git
+cd GaeKing
 ```
 
 2. 의존성 설치
@@ -105,7 +105,7 @@ npm install
 DB_HOST=localhost
 DB_USER=root
 DB_PASSWORD=yourpassword
-DB_NAME=pet_management
+DB_NAME=your_dbname
 JWT_SECRET=your_jwt_secret
 JWT_REFRESH_SECRET=your_refresh_secret
 PORT=3000
