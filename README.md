@@ -1,6 +1,6 @@
-# 🐕 반려견 관리 애플리케이션
+# 🐕 반려견 일정 관리 애플리케이션
 
-반려견의 일정 및 정보를 관리할 수 있는 애플리케이션의 백엔드 API입니다. 사용자는 반려견을 등록하고, 산책, 식사 등의 일정을 관리하며, 커스텀 위젯을 통해 중요한 정보를 모니터링할 수 있습니다.
+반려견의 일정 및 정보를 관리할 수 있는 애플리케이션의 백엔드 API입니다. 사용자는 반려견을 등록하고, 산책, 식사 등의 일정을 관리하며, 위젯을 통해 일정 정보를 확인할 수 있습니다.
 
 ## ✨ 주요 기능
 
@@ -83,7 +83,7 @@
 ## 🚀 설치 및 실행 방법
 
 ### 필수 조건
-- Node.js (v14.0.0 이상)
+- Node.js
 - npm 또는 yarn
 - MySQL
 
@@ -104,7 +104,7 @@ npm install
 ```
 DB_HOST=localhost
 DB_USER=root
-DB_PASSWORD=yourpassword
+DB_PASSWORD=your_password
 DB_NAME=your_dbname
 JWT_SECRET=your_jwt_secret
 JWT_REFRESH_SECRET=your_refresh_secret
