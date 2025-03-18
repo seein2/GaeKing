@@ -181,9 +181,6 @@ fetch('http://localhost:3000/schedules', {
 .then(data => console.log(data));
 ```
 
-## 📜 라이센스
-
-MIT
 
 ## 👥 기여하기
 
